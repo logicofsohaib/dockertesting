@@ -1,9 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'docker'
-        }
-    }
+    agent any 
     environment {
         DOCKER_IMAGE = "jenkinsrepo"
         DOCKER_HUB_IMAGE = "sohaib22/jenkinsrepo"
