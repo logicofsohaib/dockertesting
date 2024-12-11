@@ -10,7 +10,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 // Clone your GitHub repository
-                git 'https://github.com/logicofsohaib/nginx-docker-project.git'
+                git 'https://github.com/logicofsohaib/mydockertesting.git'
             }
         }
 
