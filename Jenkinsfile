@@ -1,45 +1,50 @@
 pipeline {
-    agent any 
+    agent any
+
     environment {
-        DOCKER_IMAGE = "jenkinsrepo"
-        DOCKER_HUB_IMAGE = "sohaib22/jenkinsrepo"
+        DOCKER_IMAGE = 'nginx-docker-image'
+        DOCKER_TAG = 'latest'
     }
+
     stages {
-        stage('Checkout Repository') {
+        stage('Clone Repository') {
             steps {
+                // Clone your GitHub repository
                 git 'https://github.com/logicofsohaib/nginx-docker-project.git'
             }
         }
+
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t ${DOCKER_IMAGE}:latest .'
-            }
-        }
-        stage('Login to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                script {
+                    // Build the Docker image
+                    sh 'docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .'
                 }
             }
         }
-        stage('Push Docker Image to Docker Hub') {
+
+        stage('Run Docker Container') {
             steps {
-                sh 'docker tag ${DOCKER_IMAGE}:latest ${DOCKER_HUB_IMAGE}:latest'
-                sh 'docker push ${DOCKER_HUB_IMAGE}:latest'
+                script {
+                    // Run the Docker container on port 8081 (since Jenkins is on 8080)
+                    sh 'docker run -d -p 8081:80 ${DOCKER_IMAGE}:${DOCKER_TAG}'
+                }
             }
         }
-        stage('Deploy Docker Container') {
+
+        stage('Test Deployment') {
             steps {
-                sh 'docker run -d -p 8080:80 ${DOCKER_HUB_IMAGE}:latest'
+                script {
+                    // Add commands for testing the deployed Nginx service if needed
+                    echo 'Test Deployment (e.g., curl localhost:8081 or check container logs)'
+                }
             }
         }
     }
+
     post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed.'
+        always {
+            cleanWs()  // Clean workspace after pipeline runs
         }
     }
 }
